@@ -131,7 +131,6 @@ module "eks" {
   subnet_ids        = [module.private_subnet_1.subnet_id, module.private_subnet_2.subnet_id]
   node_group_name   = "my-eks-node-group"
   node_role_arn     = aws_iam_role.eks_node_role.arn     # Use the ARN of the node IAM role here
-  instance_type     = "t2.micro"
   desired_size      = 2
   max_size          = 3
   min_size          = 1
