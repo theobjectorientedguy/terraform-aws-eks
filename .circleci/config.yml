@@ -24,7 +24,6 @@ jobs:
           root: /tmp/project
           paths:
             - .
-
   apply:
     docker:
       - image: hashicorp/terraform:light
