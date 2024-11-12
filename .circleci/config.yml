@@ -74,8 +74,3 @@ workflows:
           requires:
             - hold-apply
 
-    triggers:
-      - push:
-          branches:
-            only:
-              - master
