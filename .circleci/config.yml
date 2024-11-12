@@ -7,10 +7,6 @@ jobs:
     working_directory: /tmp/project
     steps:
       - checkout
-      - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: AWS_DEFAULT_REGION
       - run:
           name: Terraform Init and Plan
           command: |
