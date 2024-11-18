@@ -79,7 +79,8 @@ resource "aws_iam_role" "eks_cluster_role" {
   })
 }
 
-# Attach necessary policies to the EKS Cluster IAM Role
+
+# Attach Policies to EKS Cluster Role
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.eks_cluster_role.name
@@ -93,6 +94,7 @@ resource "aws_iam_role_policy_attachment" "eks_service_policy" {
 # IAM Role for EKS Nodes
 resource "aws_iam_role" "eks_node_role" {
   name = "EKSNodeRole"
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -107,7 +109,7 @@ resource "aws_iam_role" "eks_node_role" {
   })
 }
 
-# Attach necessary policies to the EKS Node IAM Role
+# Attach Policies to EKS Node Role
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
   role       = aws_iam_role.eks_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
@@ -123,18 +125,24 @@ resource "aws_iam_role_policy_attachment" "ec2_container_registry_read_only" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-# EKS Module
+# EKS Cluster Module
 module "eks" {
   source            = "./modules/eks"
   cluster_name      = "my-eks-cluster"
-  cluster_role_arn  = aws_iam_role.eks_cluster_role.arn  # Reference the IAM role ARN
-  subnet_ids        = [module.private_subnet_1.subnet_id, module.private_subnet_2.subnet_id]
+  cluster_role_arn  = aws_iam_role.eks_cluster_role.arn
+  subnet_ids        = [module.private_subnet_1.subnet_id, module.private_subnet_2.subnet_id, module.public_subnet_1.subnet_id, module.public_subnet_2.subnet_id]
   node_group_name   = "my-eks-node-group"
-  node_role_arn     = aws_iam_role.eks_node_role.arn     # Use the ARN of the node IAM role here
-  desired_size      = 2
-  max_size          = 3
-  min_size          = 1
+  node_role_arn     = aws_iam_role.eks_node_role.arn
+  desired_size      = 1                      # Number of nodes
+  max_size          = 1                      # Max nodes
+  min_size          = 1                      # Min nodes
+  instance_type     = "t2.micro"             # Free tier eligible instance type
   tags = {
     Name = "my-eks-cluster"
   }
+}
+
+# Output Kubeconfig
+output "kubeconfig" {
+  value = module.eks.kubeconfig
 }
