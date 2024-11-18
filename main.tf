@@ -136,13 +136,6 @@ module "eks" {
   desired_size      = 1                      # Number of nodes
   max_size          = 1                      # Max nodes
   min_size          = 1                      # Min nodes
-  instance_types     = "t2.micro"             # Free tier eligible instance type
-  tags = {
-    Name = "my-eks-cluster"
-  }
-}
+  instance_types    = ["t2.micro"]             # Free tier eligible instance type
 
-# Output Kubeconfig
-output "kubeconfig" {
-  value = module.eks.kubeconfig
 }

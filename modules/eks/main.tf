@@ -25,7 +25,8 @@ resource "aws_eks_node_group" "this" {
     min_size     = var.min_size
   }
 
-  instance_types = ["t2.micro"] # Hardcoded to use Free Tier eligible instance type
+  # Add instance types for the node group
+  instance_types = var.instance_types
 
   tags = {
     Name = var.node_group_name
