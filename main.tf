@@ -61,6 +61,33 @@ module "private_subnet_2" {
   }
 }
 
+
+# Create an Internet Gateway
+resource "aws_internet_gateway" "main" {
+  vpc_id = module.vpc.vpc_id
+}
+
+# Create a route table for public subnets
+resource "aws_route_table" "public" {
+  vpc_id = module.vpc.vpc_id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+}
+
+# Associate the route table with the public subnets
+resource "aws_route_table_association" "public_subnet_1" {
+  subnet_id      = module.public_subnet_1.subnet_id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "public_subnet_2" {
+  subnet_id      = module.public_subnet_2.subnet_id
+  route_table_id = aws_route_table.public.id
+}
+
 # IAM Role for EKS Cluster
 resource "aws_iam_role" "eks_cluster_role" {
   name = "EKSClusterRole"
@@ -90,6 +117,9 @@ resource "aws_iam_role_policy_attachment" "eks_service_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
   role       = aws_iam_role.eks_cluster_role.name
 }
+
+
+
 
 # IAM Role for EKS Nodes
 resource "aws_iam_role" "eks_node_role" {
@@ -129,12 +159,11 @@ module "eks" {
   source            = "./modules/eks"
   cluster_name      = "my-eks-cluster"
   cluster_role_arn  = aws_iam_role.eks_cluster_role.arn
-  subnet_ids        = [module.private_subnet_1.subnet_id, module.private_subnet_2.subnet_id, module.public_subnet_1.subnet_id, module.public_subnet_2.subnet_id]
+  subnet_ids        = [module.public_subnet_1.subnet_id, module.public_subnet_2.subnet_id]  # Use public subnets
   node_group_name   = "my-eks-node-group"
   node_role_arn     = aws_iam_role.eks_node_role.arn
   desired_size      = 1                      # Number of nodes
   max_size          = 1                      # Max nodes
   min_size          = 1                      # Min nodes
   instance_types    = ["t2.micro"]             # Free tier eligible instance type
-
 }
